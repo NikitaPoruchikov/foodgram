@@ -2,8 +2,38 @@ from rest_framework import serializers
 from .models import Recipe, Ingredient, Tag, RecipeIngredient
 from drf_extra_fields.fields import Base64ImageField
 from django.contrib.auth import get_user_model
+from users.models import CustomUser
+
+from django.db import models
 
 User = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            "id",
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+            "avatar",
+        ]
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get("request").user
+        if user.is_anonymous:
+            return False
+        return user.subscriptions.filter(author=obj).exists()
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -35,7 +65,6 @@ class RecipeIngredientWriteSerializer(serializers.ModelSerializer):
         fields = ["id", "amount"]
 
 
-
 # Сериализатор для отображения ингредиентов в рецепте
 class RecipeIngredientReadSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source="ingredient.id")
@@ -49,9 +78,7 @@ class RecipeIngredientReadSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True
-    )
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     author = AuthorSerializer(read_only=True)
     ingredients = RecipeIngredientWriteSerializer(many=True, write_only=True)
     is_favorited = serializers.SerializerMethodField()
@@ -94,7 +121,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             [
                 RecipeIngredient(
                     recipe=recipe,
-                    ingredient=ingredient_data["ingredient"],  # Теперь это работает правильно
+                    ingredient=ingredient_data[
+                        "ingredient"
+                    ],  # Теперь это работает правильно
                     amount=ingredient_data["amount"],
                 )
                 for ingredient_data in ingredients_data
@@ -119,5 +148,3 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, obj):
         return False
-
-
