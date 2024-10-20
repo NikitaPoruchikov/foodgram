@@ -1,13 +1,13 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from users.models import CustomUser
+
 
 # Модель Тегов
 class Tag(models.Model):
-    name = models.CharField(
-        max_length=200, unique=True)
-    slug = models.SlugField(
-        max_length=200, unique=True)
+    name = models.CharField(max_length=200, unique=True)
+    slug = models.SlugField(max_length=200, unique=True)
 
     class Meta:
         verbose_name = "Тег"
@@ -19,10 +19,8 @@ class Tag(models.Model):
 
 # Модель Ингредиентов
 class Ingredient(models.Model):
-    name = models.CharField(
-        max_length=200)
-    measurement_unit = models.CharField(
-        max_length=50)
+    name = models.CharField(max_length=200)
+    measurement_unit = models.CharField(max_length=50)
 
     class Meta:
         verbose_name = "Ингредиент"
@@ -36,11 +34,9 @@ class Ingredient(models.Model):
 # Модель Рецептов
 class Recipe(models.Model):
     author = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE,
-        related_name="recipes"
+        CustomUser, on_delete=models.CASCADE, related_name="recipes"
     )
-    name = models.CharField(
-        max_length=255)
+    name = models.CharField(max_length=255)
     image = models.ImageField(
         upload_to="recipes/images/", blank=True, null=True)
     text = models.TextField()
@@ -60,7 +56,7 @@ class Recipe(models.Model):
 # Промежуточная модель для связи рецептов и ингредиентов
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients'
+        Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients"
     )
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.PositiveIntegerField()
@@ -71,16 +67,13 @@ class RecipeIngredient(models.Model):
         unique_together = ["recipe", "ingredient"]
 
 
-
 # Модель для подписок
 class Subscription(models.Model):
     user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE,
-        related_name="subscriptions"
+        get_user_model(), on_delete=models.CASCADE, related_name="subscriptions"
     )
     author = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE,
-        related_name="subscribers"
+        get_user_model(), on_delete=models.CASCADE, related_name="subscribers"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -96,12 +89,10 @@ class Subscription(models.Model):
 # Модель для избранного
 class Favorite(models.Model):
     user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE,
-        related_name="favorites"
+        get_user_model(), on_delete=models.CASCADE, related_name="favorites"
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE,
-        related_name="favorited_by"
+        Recipe, on_delete=models.CASCADE, related_name="favorited_by"
     )
     added_at = models.DateTimeField(auto_now_add=True)
 
@@ -112,3 +103,23 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} добавил в избранное {self.recipe.name}"
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="shopping_cart"
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name="in_cart")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"], name="unique_shopping_cart"
+            )
+        ]
+        verbose_name = "Корзина покупок"
+        verbose_name_plural = "Корзины покупок"
+
+    def __str__(self):
+        return f"{self.user} - {self.recipe}"
