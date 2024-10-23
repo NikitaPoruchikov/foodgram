@@ -1,0 +1,12 @@
+
+# Pagination
+PAGE_SIZE = 10
+MAX_PAGE_SIZE = 100
+
+# Models
+MAX_LENGTH = 200
+MAX_LENGTH_UNIT = 50
+
+# serializers
+
+MAX_LENGTH_USERNAME = 150

@@ -2,12 +2,13 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 from users.models import CustomUser
+from .constants import MAX_LENGTH, MAX_LENGTH_UNIT
 
 
 # Модель Тегов
 class Tag(models.Model):
-    name = models.CharField(max_length=200, unique=True)
-    slug = models.SlugField(max_length=200, unique=True)
+    name = models.CharField(max_length=MAX_LENGTH, unique=True)
+    slug = models.SlugField(max_length=MAX_LENGTH, unique=True)
 
     class Meta:
         verbose_name = "Тег"
@@ -19,8 +20,8 @@ class Tag(models.Model):
 
 # Модель Ингредиентов
 class Ingredient(models.Model):
-    name = models.CharField(max_length=200)
-    measurement_unit = models.CharField(max_length=50)
+    name = models.CharField(max_length=MAX_LENGTH)
+    measurement_unit = models.CharField(max_length=MAX_LENGTH_UNIT)
 
     class Meta:
         verbose_name = "Ингредиент"
@@ -36,7 +37,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="recipes"
     )
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=MAX_LENGTH)
     image = models.ImageField(
         upload_to="recipes/images/", blank=True, null=True)
     text = models.TextField()
@@ -70,10 +71,12 @@ class RecipeIngredient(models.Model):
 # Модель для подписок
 class Subscription(models.Model):
     user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="subscriptions"
+        get_user_model(), on_delete=models.CASCADE,
+        related_name="subscriptions"
     )
     author = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="subscribers"
+        get_user_model(), on_delete=models.CASCADE,
+        related_name="subscribers"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -89,10 +92,12 @@ class Subscription(models.Model):
 # Модель для избранного
 class Favorite(models.Model):
     user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name="favorites"
+        get_user_model(), on_delete=models.CASCADE,
+        related_name="favorites"
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="favorited_by"
+        Recipe, on_delete=models.CASCADE,
+        related_name="favorited_by"
     )
     added_at = models.DateTimeField(auto_now_add=True)
 
@@ -107,10 +112,12 @@ class Favorite(models.Model):
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="shopping_cart"
+        CustomUser, on_delete=models.CASCADE,
+        related_name="shopping_cart"
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="in_cart")
+        Recipe, on_delete=models.CASCADE,
+        related_name="in_cart")
 
     class Meta:
         constraints = [
