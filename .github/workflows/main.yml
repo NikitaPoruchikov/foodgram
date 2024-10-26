@@ -124,9 +124,8 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} | sudo tee -a .env
             echo DB_PORT=${{ secrets.DB_PORT }} | sudo tee -a .env
 
-            sudo docker-compose down
-            sudo docker-compose pull
-            sudo docker-compose up -d --build
+            docker-compose -f docker-compose.production.yml down
+            docker-compose -f docker-compose.production.yml up -d --build
 
   send_message:
     name: Sending Telegram message
