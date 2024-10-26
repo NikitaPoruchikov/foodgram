@@ -213,20 +213,21 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = super().get_queryset()
 
         # Проверяем параметр запроса is_in_shopping_cart
         is_in_shopping_cart = self.request.query_params.get(
             "is_in_shopping_cart")
+
         if is_in_shopping_cart is not None and user.is_authenticated:
             if is_in_shopping_cart == "1":
-                queryset = queryset.filter(shopping_cart__user=user)
+                return super().get_queryset().filter(shopping_cart__user=user)
             elif is_in_shopping_cart == "0":
-                queryset = queryset.exclude(shopping_cart__user=user)
+                return super().get_queryset().exclude(shopping_cart__user=user)
 
-        return queryset
+        return super().get_queryset()
 
     # Преобразование данных при возврате ответа
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["tags"] = TagSerializer(

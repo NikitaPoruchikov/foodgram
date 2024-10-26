@@ -29,8 +29,7 @@ class RecipeViewSet(viewsets.ModelViewSet, AddRemoveMixin):
     filterset_class = RecipeFilter
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset
+        return super().get_queryset()
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
