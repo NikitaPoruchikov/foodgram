@@ -10,7 +10,6 @@ services:
       POSTGRES_PASSWORD: foodgram_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-
   backend:
     container_name: foodgram-backend
     image: nikita4/foodgram_backend
