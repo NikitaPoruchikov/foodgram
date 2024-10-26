@@ -1,7 +1,7 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-
+from django.db import models
 from users.models import CustomUser
+
 from .constants import MAX_LENGTH, MAX_LENGTH_UNIT
 
 

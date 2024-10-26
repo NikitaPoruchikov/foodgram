@@ -1,25 +1,14 @@
-from rest_framework import serializers
-from drf_extra_fields.fields import Base64ImageField
 from django.core.validators import RegexValidator
+from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
-from .validators import (
-    validate_cooking_time,
-    validate_image,
-    validate_tags,
-    validate_ingredients,
-)
 from users.models import CustomUser
+
 from .constants import MAX_LENGTH_USERNAME
-from .models import (
-    Recipe,
-    Ingredient,
-    Tag,
-    RecipeIngredient,
-    Subscription,
-    ShoppingCart,
-    Favorite,
-)
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Subscription, Tag)
+from .validators import (validate_cooking_time, validate_image,
+                         validate_ingredients, validate_tags)
 
 
 class AvatarSerializer(serializers.ModelSerializer):

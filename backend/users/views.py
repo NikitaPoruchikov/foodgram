@@ -1,19 +1,15 @@
-from rest_framework import viewsets, status
+from api.models import Recipe, Subscription
+from api.pagination import CustomPagination
+from api.serializers import (AvatarSerializer, PasswordChangeSerializer,
+                             SubscriptionRecipeSerializer,
+                             UserCreateSerializer, UserSerializer)
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.exceptions import NotAuthenticated
 
 from .models import CustomUser
-from api.serializers import (
-    UserSerializer,
-    UserCreateSerializer,
-    AvatarSerializer,
-    PasswordChangeSerializer,
-)
-from api.pagination import CustomPagination
-from api.models import Recipe, Subscription
-from api.serializers import SubscriptionRecipeSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):

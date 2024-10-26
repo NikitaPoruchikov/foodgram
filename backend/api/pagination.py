@@ -1,7 +1,7 @@
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from .constants import PAGE_SIZE, MAX_PAGE_SIZE
+from .constants import MAX_PAGE_SIZE, PAGE_SIZE
 
 
 class CustomPagination(PageNumberPagination):

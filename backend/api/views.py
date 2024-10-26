@@ -1,36 +1,21 @@
-from django.http import HttpResponse
-
-from rest_framework import viewsets
-from rest_framework.permissions import AllowAny
-from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated
-from rest_framework.decorators import action
-from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotAuthenticated
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
-from .pagination import CustomPagination
-from .filters import RecipeFilter
-from .permissions import (
-    IsAuthenticatedForFilter,
-    IsAuthorOrReadOnly,
-)
-from .serializers import (
-    RecipeSerializer,
-    TagSerializer,
-    IngredientSerializer,
-    SubscriptionRecipeSerializer,
-)
 from .decorators import author_required
+from .filters import RecipeFilter
 from .mixin import AddRemoveMixin
-from .models import (
-    Recipe,
-    Tag,
-    Ingredient,
-    RecipeIngredient,
-    ShoppingCart,
-    Favorite,
-)
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Tag)
+from .pagination import CustomPagination
+from .permissions import IsAuthenticatedForFilter, IsAuthorOrReadOnly
+from .serializers import (IngredientSerializer, RecipeSerializer,
+                          SubscriptionRecipeSerializer, TagSerializer)
 
 User = get_user_model()
 
