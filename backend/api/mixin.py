@@ -32,3 +32,7 @@ class AddRemoveMixin:
                 )
             instance.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {"detail": "Метод не поддерживается."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
