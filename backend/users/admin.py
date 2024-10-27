@@ -1,7 +1,8 @@
+from api.models import Subscription
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import CustomUser, Subscribe
+from .models import CustomUser
 
 
 class BaseAdminSettings(admin.ModelAdmin):
@@ -22,7 +23,7 @@ class CustomUserAdmin(BaseAdminSettings, UserAdmin):
     list_filter = ('role', 'email', 'username')
 
 
-class SubscribeAdmin(BaseAdminSettings):
+class SubscriptionAdmin(BaseAdminSettings):
     """Кастомизация админ панели для управления подписками."""
     list_display = ('id', 'user', 'author')
     list_display_links = ('id', 'user')
@@ -32,4 +33,4 @@ class SubscribeAdmin(BaseAdminSettings):
 
 # Регистрируем модели в админке
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Subscribe, SubscribeAdmin)
+admin.site.register(Subscription, SubscriptionAdmin)
