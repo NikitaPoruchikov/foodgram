@@ -29,7 +29,7 @@ ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost').split(',')
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-CSRF_TRUSTED_ORIGINS = [os.getenv('DJANGO_DOMEN', 'default_value')]
+CSRF_TRUSTED_ORIGINS = [os.getenv('DJANGO_DOMEN', 'https://example.com')]
 
 
 # Application definition
