@@ -82,6 +82,11 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Вы отписались от пользователя."},
                             status=status.HTTP_204_NO_CONTENT)
 
+        return Response(
+            {"detail": "Метод не поддерживается."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
     @action(detail=False, methods=["get"], url_path="subscriptions")
     def subscriptions(self, request):
         user = request.user
