@@ -2,7 +2,8 @@ from api.models import Recipe, Subscription
 from api.pagination import CustomPagination
 from api.serializers import (AvatarSerializer, PasswordChangeSerializer,
                              SubscriptionRecipeSerializer,
-                             UserCreateSerializer, UserSerializer)
+                             SubscriptionSerializer, UserCreateSerializer,
+                             UserSerializer)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotAuthenticated
@@ -52,47 +53,34 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post", "delete"], url_path="subscribe")
     def manage_subscription(self, request, pk=None):
-        user = request.user
         author = self.get_object()
 
         if not request.user.is_authenticated:
-            raise NotAuthenticated(
-                "Необходима авторизация для выполнения данного действия."
-            )
+            raise NotAuthenticated("Необходима авторизация.")
 
         if request.method == "POST":
-            if Subscription.objects.filter(user=user, author=author).exists():
-                return Response(
-                    {"detail": "Вы уже подписаны на этого пользователя."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            data = {"user": request.user.id, "author": author.id}
+            serializer = SubscriptionSerializer(
+                data=data, context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
-            if user == author:
-                return Response(
-                    {"detail": "Нельзя подписаться на самого себя."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            Subscription.objects.create(user=user, author=author)
+            recipes_limit = request.query_params.get("recipes_limit")
+            response_data = self.get_subscription_data(
+                author, request, recipes_limit)
+            return Response(response_data, status=status.HTTP_201_CREATED)
 
         elif request.method == "DELETE":
             subscription = Subscription.objects.filter(
-                user=user, author=author).first()
+                user=request.user, author=author).first()
             if not subscription:
                 return Response(
                     {"detail": "Подписка не найдена."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
             subscription.delete()
-            return Response(
-                {"detail": "Вы отписались от пользователя."},
-                status=status.HTTP_204_NO_CONTENT,
-            )
-        recipes_limit = request.query_params.get("recipes_limit")
-        response_data = self.get_subscription_data(
-            author, request, recipes_limit)
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            return Response({"detail": "Вы отписались от пользователя."},
+                            status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["get"], url_path="subscriptions")
     def subscriptions(self, request):

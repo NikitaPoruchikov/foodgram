@@ -5,7 +5,6 @@ from users.models import CustomUser
 from .constants import MAX_LENGTH, MAX_LENGTH_UNIT
 
 
-# Модель Тегов
 class Tag(models.Model):
     name = models.CharField(max_length=MAX_LENGTH, unique=True)
     slug = models.SlugField(max_length=MAX_LENGTH, unique=True)
@@ -18,7 +17,6 @@ class Tag(models.Model):
         return self.name
 
 
-# Модель Ингредиентов
 class Ingredient(models.Model):
     name = models.CharField(max_length=MAX_LENGTH)
     measurement_unit = models.CharField(max_length=MAX_LENGTH_UNIT)
@@ -26,13 +24,16 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = "Ингредиент"
         verbose_name_plural = "Ингредиенты"
-        unique_together = ["name", "measurement_unit"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "measurement_unit"], name="unique_ingredient"
+            )
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.measurement_unit})"
 
 
-# Модель Рецептов
 class Recipe(models.Model):
     author = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="recipes"
@@ -54,7 +55,6 @@ class Recipe(models.Model):
         return self.name
 
 
-# Промежуточная модель для связи рецептов и ингредиентов
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients"
@@ -65,10 +65,14 @@ class RecipeIngredient(models.Model):
     class Meta:
         verbose_name = "Ингредиент рецепта"
         verbose_name_plural = "Ингредиенты рецептов"
-        unique_together = ["recipe", "ingredient"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recipe", "ingredient"],
+                name="unique_recipe_ingredient"
+            )
+        ]
 
 
-# Модель для подписок
 class Subscription(models.Model):
     user = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE,
@@ -83,13 +87,16 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
-        unique_together = ["user", "author"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "author"], name="unique_subscription"
+            )
+        ]
 
     def __str__(self):
         return f"{self.user.username} подписан на {self.author.username}"
 
 
-# Модель для избранного
 class Favorite(models.Model):
     user = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE,
@@ -104,7 +111,11 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = "Избранное"
         verbose_name_plural = "Избранные"
-        unique_together = ["user", "recipe"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe"], name="unique_favorite"
+            )
+        ]
 
     def __str__(self):
         return f"{self.user.username} добавил в избранное {self.recipe.name}"
@@ -117,7 +128,8 @@ class ShoppingCart(models.Model):
     )
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE,
-        related_name="in_cart")
+        related_name="in_cart"
+    )
 
     class Meta:
         constraints = [

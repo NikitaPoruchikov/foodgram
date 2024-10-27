@@ -4,11 +4,30 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from users.models import CustomUser
 
-from .constants import MAX_LENGTH_USERNAME
+from .constants import MAX_LENGTH_USERNAME, USERNAME_REGEX
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Subscription, Tag)
 from .validators import (validate_cooking_time, validate_image,
                          validate_ingredients, validate_tags)
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ["user", "author"]
+
+    def validate(self, data):
+        user = self.context["request"].user
+        author = data.get("author")
+
+        if Subscription.objects.filter(user=user, author=author).exists():
+            raise serializers.ValidationError(
+                "Вы уже подписаны на этого пользователя.")
+        if user == author:
+            raise serializers.ValidationError(
+                "Нельзя подписаться на самого себя.")
+
+        return data
 
 
 class AvatarSerializer(serializers.ModelSerializer):
@@ -25,9 +44,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
         max_length=MAX_LENGTH_USERNAME,
         validators=[
             RegexValidator(
-                regex=r"^[\w.@+-]+\Z",
+                regex=USERNAME_REGEX,
                 message="Введите правильное имя пользователя.",
             )
+
         ],
     )
 
@@ -203,41 +223,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, value):
         return validate_ingredients(value)
 
-    def filter_is_in_shopping_cart(self, queryset, name, value):
-        user = self.request.user
-        if value and user.is_authenticated:
-            return queryset.filter(shopping_cart__user=user)
-        elif not value and user.is_authenticated:
-            return queryset.exclude(shopping_cart__user=user)
-        return queryset
-
-    def get_queryset(self):
-        user = self.request.user
-
-        # Проверяем параметр запроса is_in_shopping_cart
-        is_in_shopping_cart = self.request.query_params.get(
-            "is_in_shopping_cart")
-
-        if is_in_shopping_cart is not None and user.is_authenticated:
-            if is_in_shopping_cart == "1":
-                return super().get_queryset().filter(shopping_cart__user=user)
-            elif is_in_shopping_cart == "0":
-                return super().get_queryset().exclude(shopping_cart__user=user)
-
-        return super().get_queryset()
-
-    # Преобразование данных при возврате ответа
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["tags"] = TagSerializer(
-            instance.tags.all(), many=True).data
-        representation["ingredients"] = RecipeIngredientReadSerializer(
-            instance.recipe_ingredients.all(), many=True
-        ).data
-        return representation
-
-    # Создание рецепта
     def create(self, validated_data):
         tags = validated_data.pop("tags")
         ingredients_data = validated_data.pop("ingredients")
@@ -246,7 +231,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         self.create_ingredients(recipe, ingredients_data)
         return recipe
 
-    # Обновление ингредиентов
     def create_ingredients(self, recipe, ingredients_data):
         RecipeIngredient.objects.bulk_create(
             [
@@ -259,7 +243,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             ]
         )
 
-    # Обновление рецепта
     def update(self, instance, validated_data):
         tags = validated_data.pop("tags", None)
         ingredients_data = validated_data.pop("ingredients", None)
@@ -279,6 +262,23 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+    def filter_is_in_shopping_cart(self, queryset, name, value):
+        user = self.request.user
+        if value and user.is_authenticated:
+            return queryset.filter(shopping_cart__user=user)
+        elif not value and user.is_authenticated:
+            return queryset.exclude(shopping_cart__user=user)
+        return queryset
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["tags"] = TagSerializer(
+            instance.tags.all(), many=True).data
+        representation["ingredients"] = RecipeIngredientReadSerializer(
+            instance.recipe_ingredients.all(), many=True
+        ).data
+        return representation
 
     def get_is_favorited(self, obj):
         user = self.context["request"].user

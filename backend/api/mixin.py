@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 
 
@@ -36,3 +37,14 @@ class AddRemoveMixin:
             {"detail": "Метод не поддерживается."},
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
         )
+
+
+class AuthorPermissionMixin:
+    def check_author_permission(self, request, obj):
+        # Проверка аутентификации
+        if not request.user.is_authenticated:
+            raise NotAuthenticated(detail="Необходима авторизация.")
+        # Проверка прав (авторства)
+        if obj.author != request.user:
+            raise PermissionDenied(
+                detail="У вас нет прав на выполнение этого действия.")

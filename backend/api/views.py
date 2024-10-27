@@ -7,9 +7,8 @@ from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .decorators import author_required
 from .filters import RecipeFilter
-from .mixin import AddRemoveMixin
+from .mixin import AddRemoveMixin, AuthorPermissionMixin
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
 from .pagination import CustomPagination
@@ -20,16 +19,14 @@ from .serializers import (IngredientSerializer, RecipeSerializer,
 User = get_user_model()
 
 
-class RecipeViewSet(viewsets.ModelViewSet, AddRemoveMixin):
+class RecipeViewSet(viewsets.ModelViewSet,
+                    AddRemoveMixin, AuthorPermissionMixin):
     queryset = Recipe.objects.all().order_by("id")
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
-    permission_classes = [AllowAny, IsAuthorOrReadOnly]
+    permission_classes = [IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
-
-    def get_queryset(self):
-        return super().get_queryset()
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
@@ -42,17 +39,15 @@ class RecipeViewSet(viewsets.ModelViewSet, AddRemoveMixin):
                 "Необходима авторизация для создания рецепта.")
         serializer.save(author=self.request.user)
 
-    @author_required
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
-
-    @author_required
     def update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        self.check_author_permission(request, obj)  # Проверка
         return super().update(request, *args, **kwargs)
 
-    @author_required
-    def partial_update(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        self.check_author_permission(request, obj)  # Проверка
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=["get"], url_path="get-link")
     def get_link(self, request, pk=None):
@@ -101,9 +96,6 @@ class RecipeViewSet(viewsets.ModelViewSet, AddRemoveMixin):
     def add_and_remove_shopping_cart(self, request, pk=None):
         return self.add_or_remove(
             request, ShoppingCart, SubscriptionRecipeSerializer)
-
-    def get_serializer_class(self):
-        return RecipeSerializer
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
