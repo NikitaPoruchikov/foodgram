@@ -9,8 +9,9 @@ from .constants import (MAX_LENGTH_USERNAME,
                         USERNAME_VALIDATION_ERROR)
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Subscription, Tag)
-from .validators import (validate_cooking_time, validate_image,
-                         validate_ingredients, validate_tags)
+from .validators import (validate_image,
+                         validate_ingredients,
+                         validate_tags)
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
