@@ -41,7 +41,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(max_length=MAX_LENGTH)
     image = models.ImageField(
-        upload_to="recipes/images/", blank=True, null=True)
+        upload_to="recipes/images/")
     text = models.TextField()
     ingredients = models.ManyToManyField(
         Ingredient, through="RecipeIngredient")
