@@ -1,19 +1,4 @@
-from rest_framework import permissions
 from rest_framework.permissions import SAFE_METHODS, BasePermission
-
-
-class IsAuthenticatedForFilter(permissions.BasePermission):
-    """
-    Разрешает доступ к рецептам только для авторизованных пользователей.
-    """
-
-    def has_permission(self, request, view):
-        filter_params = ["is_favorited", "is_in_shopping_cart"]
-
-        if not any(param in request.query_params for param in filter_params):
-            return True
-
-        return request.user and request.user.is_authenticated
 
 
 class IsAuthorOrReadOnly(BasePermission):

@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from users.models import CustomUser
+from django.core.validators import MinValueValidator, MaxValueValidator
 
+from users.models import CustomUser
 from .constants import MAX_LENGTH, MAX_LENGTH_UNIT
 
 
@@ -45,7 +46,9 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient, through="RecipeIngredient")
     tags = models.ManyToManyField(Tag)
-    cooking_time = models.PositiveIntegerField()
+    cooking_time = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(500)]
+    )
 
     class Meta:
         verbose_name = "Рецепт"

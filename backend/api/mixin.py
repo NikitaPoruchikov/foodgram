@@ -21,7 +21,7 @@ class AddRemoveMixin:
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             model.objects.create(user=user, recipe=recipe)
-            serializer = serializer_class(recipe, context={'request': request})
+            serializer = serializer_class(recipe, context={"request": request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == "DELETE":

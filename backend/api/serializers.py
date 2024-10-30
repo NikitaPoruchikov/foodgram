@@ -2,9 +2,11 @@ from django.core.validators import RegexValidator
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from users.models import CustomUser
 
-from .constants import MAX_LENGTH_USERNAME, USERNAME_REGEX
+from users.models import CustomUser
+from .constants import (MAX_LENGTH_USERNAME,
+                        USERNAME_REGEX,
+                        USERNAME_VALIDATION_ERROR)
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Subscription, Tag)
 from .validators import (validate_cooking_time, validate_image,
@@ -45,7 +47,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         validators=[
             RegexValidator(
                 regex=USERNAME_REGEX,
-                message="Введите правильное имя пользователя.",
+                message=USERNAME_VALIDATION_ERROR,
             )
 
         ],
@@ -180,7 +182,8 @@ class SubscriptionRecipeSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True)
+        queryset=Tag.objects.all(), many=True
+    )
     author = UserSerializer(read_only=True)
     ingredients = RecipeIngredientWriteSerializer(many=True, write_only=True)
     is_favorited = serializers.SerializerMethodField()
@@ -203,12 +206,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        if not data.get('ingredients'):
+        if not data.get("ingredients"):
             raise serializers.ValidationError(
-                {'ingredients': 'Это поле обязательно.'})
+                {"ingredients": "Это поле обязательно."})
         if not data.get('tags'):
             raise serializers.ValidationError(
-                {'tags': 'Это поле обязательно.'})
+                {"tags": "Это поле обязательно."})
         return data
 
     def validate_cooking_time(self, value):
@@ -247,16 +250,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         tags = validated_data.pop("tags", None)
         ingredients_data = validated_data.pop("ingredients", None)
 
-        # Обновляем теги, если они переданы
         if tags is not None:
             instance.tags.set(tags)
 
-        # Обновляем ингредиенты, если они переданы
         if ingredients_data is not None:
             instance.recipe_ingredients.all().delete()
             self.create_ingredients(instance, ingredients_data)
 
-        # Обновляем другие поля
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
@@ -273,11 +273,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation["tags"] = TagSerializer(
+        representation['tags'] = TagSerializer(
             instance.tags.all(), many=True).data
-        representation["ingredients"] = RecipeIngredientReadSerializer(
+        representation['ingredients'] = RecipeIngredientReadSerializer(
             instance.recipe_ingredients.all(), many=True
         ).data
+        representation['image'] = representation['image'] or ''
         return representation
 
     def get_is_favorited(self, obj):

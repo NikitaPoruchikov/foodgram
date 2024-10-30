@@ -1,15 +1,15 @@
-from api.models import Recipe, Subscription
-from api.pagination import CustomPagination
-from api.serializers import (AvatarSerializer, PasswordChangeSerializer,
-                             SubscriptionRecipeSerializer,
-                             SubscriptionSerializer, UserCreateSerializer,
-                             UserSerializer)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from api.models import Recipe, Subscription
+from api.pagination import CustomPagination
+from api.serializers import (AvatarSerializer, PasswordChangeSerializer,
+                             SubscriptionRecipeSerializer,
+                             SubscriptionSerializer, UserCreateSerializer,
+                             UserSerializer)
 from .models import CustomUser
 
 
@@ -152,4 +152,5 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST)
         user.set_password(serializer.validated_data["new_password"])
         user.save()
-        return Response({"status": "password set"}, status=204)
+        return Response({"status": "password set"},
+                        status=status.HTTP_204_NO_CONTENT)

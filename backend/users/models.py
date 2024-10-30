@@ -1,10 +1,10 @@
-# users/models.py
-from api.constants import (MAX_LENGTH_FIRST_NAME, MAX_LENGTH_LAST_NAME,
-                           MAX_LENGTH_USERNAME, USERNAME_REGEX,
-                           USERNAME_VALIDATION_ERROR)
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.validators import RegexValidator
 from django.db import models
+
+from api.constants import (MAX_LENGTH_FIRST_NAME, MAX_LENGTH_LAST_NAME,
+                           MAX_LENGTH_USERNAME, USERNAME_REGEX,
+                           USERNAME_VALIDATION_ERROR)
 
 
 class UserRole:
