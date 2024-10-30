@@ -36,7 +36,6 @@ Modify the server_name in the ../infra/nginx.conf file to match the IP address o
 Copy the docker-compose.yml and nginx.conf files from ../infra/ to the server:
 
 ```sh
-copy code
 scp docker-compose.yml <username>@<host>:/home/<username>/docker-compose.yml
 scp nginx.conf <username>@<host>:/home/<username>/nginx.conf
 Create environment variables (as specified in ../infra/env.example) and add them to GitHub Actions Secrets.
@@ -99,5 +98,5 @@ plaintext
 https://foodgrami.zapto.org/admin
 login: rev20240@gmail.com
 pass: asd123
-Author
+### Author
 Nikita Poruchikov
