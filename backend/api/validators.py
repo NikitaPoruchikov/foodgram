@@ -3,12 +3,6 @@ from rest_framework.exceptions import ValidationError
 from .validation_messages import ERROR_MESSAGES
 
 
-def validate_cooking_time(value):
-    if value < 1:
-        raise ValidationError(ERROR_MESSAGES['invalid_cooking_time'])
-    return value
-
-
 def validate_image(value):
     if not value:
         raise ValidationError(ERROR_MESSAGES['empty_image'])

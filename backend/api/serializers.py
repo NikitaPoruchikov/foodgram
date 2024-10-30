@@ -214,9 +214,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                 {"tags": "Это поле обязательно."})
         return data
 
-    def validate_cooking_time(self, value):
-        return validate_cooking_time(value)
-
     def validate_image(self, value):
         return validate_image(value)
 
