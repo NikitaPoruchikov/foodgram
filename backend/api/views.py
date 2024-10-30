@@ -1,11 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .filters import IngredientFilter, RecipeFilter
+from .filters import RecipeFilter
 from .mixin import AddRemoveMixin, AuthorPermissionMixin
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
@@ -92,8 +93,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = [permissions.AllowAny]
-    filter_backends = [DjangoFilterBackend]
-    search_fields = [IngredientFilter]
+    filter_backends = [SearchFilter]
+    search_fields = ['^name']
 
     def get_queryset(self):
         name = self.request.query_params.get("name", None)
