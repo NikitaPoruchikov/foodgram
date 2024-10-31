@@ -12,8 +12,9 @@ from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (IngredientSerializer, RecipeSerializer,
-                          SubscriptionRecipeSerializer, TagSerializer)
+from .serializers import (IngredientSerializer, RecipeWriteSerializer,
+                          SubscriptionRecipeSerializer, TagSerializer,
+                          RecipeReadSerializer)
 
 User = get_user_model()
 
@@ -21,12 +22,16 @@ User = get_user_model()
 class RecipeViewSet(viewsets.ModelViewSet,
                     AddRemoveMixin, AuthorPermissionMixin):
     queryset = Recipe.objects.all().order_by("id")
-    serializer_class = RecipeSerializer
     pagination_class = CustomPagination
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,
                           IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

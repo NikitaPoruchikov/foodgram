@@ -9,6 +9,12 @@ class BaseAdminSettings(admin.ModelAdmin):
     empty_value_display = "пусто"
 
 
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1  # Количество пустых полей для добавления новых ингредиентов
+    autocomplete_fields = ['ingredient']
+
+
 @admin.register(Tag)
 class TagAdmin(BaseAdminSettings):
     list_display = ("name", "slug")
@@ -37,6 +43,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ("tags", "author")
     filter_horizontal = ("tags",)
     readonly_fields = ("get_favorite_count",)
+    inlines = [RecipeIngredientInline]
 
     def get_favorite_count(self, obj):
         return obj.favorited_by.count()

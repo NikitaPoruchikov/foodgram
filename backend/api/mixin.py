@@ -2,6 +2,20 @@ from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 
+from .models import RecipeIngredient
+
+
+class IngredientMixin:
+    def create_ingredients(self, recipe, ingredients_data):
+        RecipeIngredient.objects.bulk_create([
+            RecipeIngredient(
+                recipe=recipe,
+                ingredient=ingredient_data["ingredient"],
+                amount=ingredient_data["amount"],
+            )
+            for ingredient_data in ingredients_data
+        ])
+
 
 class AddRemoveMixin:
     def add_or_remove(self, request, model, serializer_class):
